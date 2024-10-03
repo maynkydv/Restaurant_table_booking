@@ -1,21 +1,47 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from "react";
 import { server_origin } from '../utils/constant';
 import { toast } from "react-hot-toast";
 import { useNavigate } from 'react-router-dom';
+import { useCookies } from "react-cookie";
+import { jwtDecode } from "jwt-decode"; 
 
 const RestaurantCard = ({ restaurant, isLoggedIn, isAdmin }) => {
-  const { restaurantId, name, location, mobile, tableCount } = restaurant; 
-  // console.log(restaurant.restaurantId);
+  const [cookies, setCookie, removeCookie] = useCookies(["tokenId"]);
+  const { restaurantId, name, location, mobile, tableCount } = restaurant;
+  // console.log(restaurant);
   const navigate = useNavigate();
 
   const [isBookingFormVisible, setBookingFormVisible] = useState(false);
   const [formData, setFormData] = useState({
     restaurantId: restaurantId,
+    restaurantName: name,
+    userId: '',
+    userName: '',
     date: '',
     startTime: '',
     endTime: '',
     guestCount: 1,
   });
+
+
+  useEffect(() => {
+    const tokenId = cookies.tokenId;
+    if (!tokenId) {
+      toast.error('Login First');
+      navigate('/login');
+    }
+    try {
+      const decodedToken = jwtDecode(tokenId);
+      setFormData({ ...formData,
+        userId: decodedToken.userId,
+        userName: decodedToken.userName,
+       });
+    } catch (error) {
+      console.error("Invalid token", error);
+    }
+    
+  }, [cookies]);
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -39,14 +65,19 @@ const RestaurantCard = ({ restaurant, isLoggedIn, isAdmin }) => {
       toast.error('Unauthorized for normal User');
       return;
     }
+    const confirmed = window.confirm(`Are you sure you want to delete the restaurant: ${restaurant.name}?`);
+
+    if (!confirmed) {
+      return;
+    }
 
     try {
-      const response = await fetch(`${server_origin}/user/restaurant/delete`, {
+      const response = await fetch(`${server_origin}/admin/restaurant/delete`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ restaurantId: restaurantId }), 
+        body: JSON.stringify({ restaurantId: restaurantId }),
         credentials: 'include',
       });
 
@@ -57,7 +88,8 @@ const RestaurantCard = ({ restaurant, isLoggedIn, isAdmin }) => {
 
       const result = await response.json();
       toast.success(result.message);
-      navigate('/'); // Navigate after deletion
+      window.location.reload();
+      // navigate('/restaurants'); // Navigate after deletion
 
     } catch (error) {
       console.error('Error removing restaurant:', error.message);
@@ -88,21 +120,27 @@ const RestaurantCard = ({ restaurant, isLoggedIn, isAdmin }) => {
         throw new Error(errorData.message || 'Failed to create booking');
       }
 
+
       const result = await response.json();
-      toast.success(result.message);
+
+      console.log(result);
+
+      toast.success(`${result.message} Your Table number is ${result.booking.tableNumber}`);
 
       setFormData({
         restaurantId: restaurantId,
+        restaurantName: name,
         date: '',
         startTime: '',
         endTime: '',
         guestCount: 1,
       });
       setBookingFormVisible(false);
+      navigate('/profile');
 
     } catch (error) {
       console.error('Error booking table:', error.message);
-      toast.error(`Error: ${error.message}`);
+      toast.error(`Oops !! ${error.message}`);
     }
   };
 

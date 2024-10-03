@@ -27,6 +27,7 @@ const ProfilePage = () => {
         }
 
         const userData = await response.json();
+        console.log(userData);
         setUserData({
           name: userData.name,
           email: userData.email,
@@ -81,6 +82,45 @@ const ProfilePage = () => {
       toast.error(`Error: ${error.message}`);
     }
   };
+
+  const handleDeleteBooking = async (bookingId) => {
+    try {
+      const response = await fetch(`${server_origin}/user/booking`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ bookingId }),
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete booking');
+      }
+
+      toast.success('Booking deleted successfully!');
+      // window.location.reload();
+      setBookings((prevBookings) => prevBookings.filter(booking => booking.bookingId !== bookingId));
+
+    } catch (error) {
+      console.error('Error deleting booking:', error.message);
+      toast.error(`Error: ${error.message}`);
+    }
+  };
+
+
+  const isUnbookable = (endTime) => {
+    return true ;
+    const currentTime = Date.now();
+    console.log(currentTime);
+    const bookingEndTime = new Date(endTime);
+    console.log(endTime);
+
+    return currentTime < bookingEndTime;
+  };
+
+
 
   return (
     <div className="max-w-lg mx-auto mt-10 p-6 bg-white rounded shadow-lg">
@@ -156,22 +196,32 @@ const ProfilePage = () => {
       <h2 className="text-2xl font-bold mt-8 mb-4">Your Bookings</h2>
       {bookings.length > 0 ? (
         <ul>
-          {bookings.map((booking, index) => (
-            <li key={index} className="mb-2 p-2 border border-gray-300 rounded">
-              {/* <p><strong>Restaurant:</strong> {booking.restaurant}</p> */}
-              <p><strong>Restaurant Id:</strong> {booking.restaurantId}</p>
+        {bookings.map((booking) => (
+          <li key={booking.bookingId} className="mb-2 p-2 border border-gray-300 rounded flex justify-between items-center">
+            <div>
+              <p><strong>Restaurant Name:</strong> {booking.restaurantName}</p>
               <p><strong>Table Number:</strong> {booking.tableNumber}</p>
+              <p><strong>For:</strong> {booking.guestCount} Guest</p>
               <p><strong>Date:</strong> {booking.date}</p>
               <p><strong>From:</strong> {booking.startTime}</p>
               <p><strong>To:</strong> {booking.endTime}</p>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p>No bookings found.</p>
-      )}
-    </div>
-  );
+            </div>
+            {isUnbookable(booking.endTime) && ( // Check if the booking can be unbooked
+              <button
+                onClick={() => handleDeleteBooking(booking.bookingId)}
+                className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded"
+              >
+                Unbook
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p>No bookings found.</p>
+    )}
+  </div>
+);
 };
 
 export default ProfilePage;

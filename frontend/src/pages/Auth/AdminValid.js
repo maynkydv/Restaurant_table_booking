@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useCookies } from 'react-cookie';
+import { jwtDecode } from 'jwt-decode';
+import { toast } from 'react-hot-toast';
 import { server_origin } from '../../utils/constant';
 import { useNavigate } from 'react-router-dom';
-import { toast, } from "react-hot-toast";
 
 
-const Login = () => {
+const AdminValid = () => {
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
+    ADMIN_KEY:''
   });
 
   const handleChange = (e) => {
@@ -18,6 +19,26 @@ const Login = () => {
     });
   };
 
+  const [cookies] = useCookies(['tokenId']);
+
+  let isCutomer = false ;
+
+  useEffect(() => {  
+    
+    const tokenId = cookies.tokenId;
+    if (tokenId) {
+      const decodedToken = jwtDecode(tokenId);
+      isCutomer = (decodedToken.role === 'customer') ;
+    }
+
+    if(!isCutomer){
+      // console.log(isAdmin );
+      toast.error('Unauthorized: You already have Admin Access');
+      navigate('/');
+    }
+
+  },[cookies]);
+
 
   const navigate = useNavigate();
   //     navigate("/");
@@ -26,8 +47,8 @@ const Login = () => {
     e.preventDefault();
 
     try {
-      const response = await fetch(`${server_origin}/user/login`, {
-        method: 'POST',
+      const response = await fetch(`${server_origin}/admin/define`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -37,22 +58,13 @@ const Login = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-
-        if (response.status === 404) {
-          throw new Error('Invalid email');
-        } else if (response.status === 401) {
-          throw new Error('Invalid password');
-        } else {
-          throw new Error(errorData.message || 'Failed to login');
-        }
+        throw new Error(errorData.message);
       }
-
       const userData = await response.json();
 
-      console.log('User Logged In successfully:', userData);
-      toast.success('User logged in successfully!');
-
-      navigate("/");
+      console.log('User Logged In as Admin successfully:', userData);
+      toast.success('Admin authorisation Successful');
+      navigate("/home");
 
     } catch (error) {
       console.error('Error during login:', error.message);
@@ -64,35 +76,25 @@ const Login = () => {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="bg-white shadow-md rounded px-8 py-6 w-full max-w-md">
-        <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
+        <h2 className="text-2xl font-bold text-center mb-6">Become Admin</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
+          
           <div>
-            <label className="block text-gray-700">Email</label>
+            <label className="block text-gray-700">ADMIN KEY</label>
             <input
-              type="email"
-              name="email"
-              value={formData.email}
+              type="text"
+              name="ADMIN_KEY"
+              value={formData.ADMIN_KEY}
               onChange={handleChange}
               className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Your Email"
-            />
-          </div>
-          <div>
-            <label className="block text-gray-700">Password</label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Your Password"
+              placeholder="Enter ADMIN KEY"
             />
           </div>
           <button
             type="submit"
             className="w-full bg-blue-500 text-white font-semibold py-2 rounded-lg hover:bg-blue-600"
           >
-            Login
+            Validate
           </button>
         </form>
       </div>
@@ -100,4 +102,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default AdminValid;

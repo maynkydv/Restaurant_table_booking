@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
-import { jwtDecode } from "jwt-decode"; 
-import { FaUserCircle } from "react-icons/fa"; 
+import { jwtDecode } from "jwt-decode";
+import { FaUserCircle } from "react-icons/fa";
 
 const Navbar = () => {
   const [cookies, setCookie, removeCookie] = useCookies(["tokenId"]);
@@ -18,7 +18,6 @@ const Navbar = () => {
       try {
         const decodedToken = jwtDecode(tokenId);
         setRole(decodedToken.role);
-        console.log(decodedToken.role);
       } catch (error) {
         console.error("Invalid token", error);
       }
@@ -29,6 +28,7 @@ const Navbar = () => {
 
   const handleLogout = () => {
     removeCookie("tokenId"); // Remove token from cookies
+    setRole(null);
     setIsLoggedIn(false);
     navigate("/login");
   };
@@ -44,6 +44,16 @@ const Navbar = () => {
           <Link to="/restaurants" className="text-gray-700 text-lg font-semibold hover:text-gray-900">
             Restaurants
           </Link>
+
+          {(role) && (role === 'admin') && (
+            <>
+              <Link to="/add-restaurant" className="flex items-center text-lg text-blue-600 font-bold hover:text-gray-900">
+                Add Restaurant
+              </Link><Link to="/users" className="flex items-center text-lg text-blue-600 font-bold hover:text-gray-900">
+                All Users
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Right */}

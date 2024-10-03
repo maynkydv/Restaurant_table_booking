@@ -7,46 +7,61 @@ import { useNavigate } from 'react-router-dom';
 
 const AddRestaurant = () => {
   const [cookies] = useCookies(['tokenId']);
-  // const [isAdmin, setIsAdmin] = useState(false);
   const [restaurantData, setRestaurantData] = useState({
     name: '',
     location: '',
     mobile: '',
     tableCount: 0,
-    ownerId: '',
+    userId: 0,
   });
+  const [users, setUsers] = useState([]); // State to store users
   const navigate = useNavigate();
-  let isAdmin = false ;
+  let isAdmin = false;
 
-  useEffect(() => {  
-    
+  useEffect(() => {
     const tokenId = cookies.tokenId;
     if (tokenId) {
       const decodedToken = jwtDecode(tokenId);
-      isAdmin = (decodedToken.role === 'admin') ;
+      isAdmin = decodedToken.role === 'admin';
     }
 
-    if(!isAdmin){
-      // console.log(isAdmin );
-      toast.error('Unauthorized: Only admin can Access');
+    if (!isAdmin) {
+      toast.error('Unauthorized: Only admin can access');
       navigate('/');
     }
 
-  },[]);
+    // Fetch all users from the server
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch(`${server_origin}/admin/users`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch users');
+        }
+
+        const usersData = await response.json();
+        setUsers(usersData);
+      } catch (error) {
+        toast.error(`Error: ${error.message}`);
+      }
+    };
+
+    fetchUsers();
+  }, [cookies.tokenId, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setRestaurantData({ ...restaurantData, [name]: value });
-  }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!isAdmin) {
-      toast.error('Unauthorized: Only admin can add restaurants');
-      return;
-    }
-
     try {
       const response = await fetch(`${server_origin}/admin/restaurant`, {
         method: 'POST',
@@ -62,17 +77,14 @@ const AddRestaurant = () => {
         throw new Error(errorData.message || 'Failed to add restaurant');
       }
 
-      const result = await response.json();
       toast.success('Restaurant added successfully');
-      // navigate('/');  
-
+      navigate('/restaurants');
     } catch (error) {
       toast.error(`Error: ${error.message}`);
     }
   };
 
   return (
-    
     <div className="container mx-auto p-6">
       <h1 className="text-3xl font-bold text-center mb-6">Add A New Restaurant</h1>
       <div className="max-w-lg mx-auto p-6 bg-white shadow-md rounded-md">
@@ -122,15 +134,22 @@ const AddRestaurant = () => {
             />
           </div>
           <div>
-            <label className="block text-gray-700 font-bold mb-1">Owner ID</label>
-            <input
-              type="text"
-              name="ownerId"
-              value={restaurantData.ownerId}
+            <label className="block text-gray-700 font-bold mb-1">Owner</label>
+            <select
+              type="userId"
+              name="userId"
+              value={restaurantData.userId}
               onChange={handleChange}
               required
               className="w-full border px-3 py-2 rounded"
-            />
+            >
+              <option value="">Select Owner</option>
+              {users.map((user) => (
+                <option key={user.userId} value={user.userId}>
+                  {user.name} ({user.email})
+                </option>
+              ))}
+            </select>
           </div>
           <button
             type="submit"
