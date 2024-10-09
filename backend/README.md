@@ -2,29 +2,6 @@
 
 # Restaurant Table Booking Website
 
-## Getting Started
-
-### Installation
-
-#### Clone the repository:
-
-    ```bash
-    git clone https://github.com/maynkydv/Restaurant_table_booking
-    cd Restaurant_table_booking
-    ```
-
-    if branch working_code doesnot merged to master  
-
-    ```bash
-    git clone https://github.com/maynkydv/Restaurant_table_booking
-    cd Restaurant_table_booking
-    git switch working_code 
-    cd backend
-    ```
-``
-
-# Backend
-
 ## Overview
 
 This is a Node.js application using Express library. The app also uses Sequelize for ORM (Object-Relational Mapping) to interact with the database and supports CORS for communication with a frontend application running on `localhost:3000`. The application includes routing for users and admins, and stores some of its configuration in a `.env` file.
@@ -50,10 +27,17 @@ Before you begin, ensure you have the following installed:
 
 ### Installation
 
-1. Switching to Backend:
+1. Clone the repository:
 
     ```bash
-    cd backend
+    git clone https://github.com/maynkydv/Restaurant_table_booking
+    cd Restaurant_table_booking
+    ```
+
+    if branch working_code doesnot merged to master  
+
+    ```bash
+    git switch working_code 
     ```
 
 2. Install dependencies:
@@ -92,7 +76,6 @@ Before you begin, ensure you have the following installed:
     ```
 
 3. Open your browser and go to `http://localhost:5000` to verify that the server is running.
-
 
 ## Project Structure
 
@@ -163,7 +146,7 @@ Contains Express routers for user-related and admin-related routes:
 All user-related routes are prefixed with `/user`.
 
 ```javascript
-const userRoutes = require('./userRoutes');
+const userRoutes = require('./routes/userRoutes');
 app.use('/user', userRoutes);
 ```
 
@@ -172,7 +155,7 @@ app.use('/user', userRoutes);
 All admin-related routes are prefixed with `/admin`.
 
 ```javascript
-const adminRoutes = require('./adminRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 app.use('/admin', adminRoutes);
 ```
 
@@ -206,137 +189,3 @@ This application uses Sequelize for ORM. Ensure your database credentials are co
 
 - **ADMIN_KEY**: Secret key specific to admin users for additional security.
 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-# Frontend
-
-## Overview
-
-This is the frontend application for a restaurant table booking system built with React. The project structure includes separate components, pages, and utility functions for a modular and scalable design. It also incorporates Tailwind CSS for styling.
-
-## Project Structure
-
-```
-frontend/
-├── node_modules/
-├── public/
-└── src/
-    ├── components/
-    │   ├── Navbar.js
-    │   └── RestaurantCard.js
-    ├── pages/
-    │   ├── Admin/
-    │   │   ├── AddRestaurant.js
-    │   │   ├── AllUsers.js
-    │   │   └── RestaurantBookings.js
-    │   ├── Auth/
-    │   │   ├── AdminValid.js
-    │   │   ├── Login.js
-    │   │   └── Register.js
-    │   └── User/
-    │       ├── Home.js
-    │       ├── Profile.js
-    │       └── Restaurant.js
-    ├── utils/
-    │   ├── AuthContext.js
-    │   └── constant.js
-    ├── App.css
-    ├── App.js
-    ├── App.test.js
-    ├── index.css
-    ├── index.js
-    ├── .gitignore
-    ├── package-lock.json
-    ├── package.json
-    └── tailwind.config.js
-```
-
-## Installation
-
-1. **Switching to Frontend:**
-
-    ```bash
-    cd backend
-    ```
-    ```
-
-2. **Install dependencies:**
-
-    ```bash
-    npm install
-    ```
-
-3. **Start the application:**
-
-    ```bash
-    npm start
-    ```
-
-4. Open your browser and navigate to `http://localhost:3000`.
-
-
-
-## Project Details
-
-### `src/components/`
-
-- **Navbar.js**: Navigation bar that appears on all pages.
-- **RestaurantCard.js**: Component to display individual restaurant details and show the booking form.
-
-### `src/pages/`
-
-#### `Admin/`
-- **AddRestaurant.js**: Allows the admin to add a new restaurant.
-- **AllUsers.js**: Displays a list of all users.
-- **RestaurantBookings.js**: Shows bookings made for a restaurant.
-
-#### `Auth/`
-- **AdminValid.js**: Admin validation component for giving admin role to user.
-- **Login.js**: Login page for users.
-- **Register.js**: Registration page for new users.
-
-#### `User/`
-- **Home.js**: Main landing page for users to browse restaurants.
-- **Profile.js**: User profile page.
-- **Restaurant.js**: Displays all restaurantCards.
-
-### `src/utils/`
-
-- **AuthContext.js**: Provides authentication context to manage user sessions across the app.
-- **constant.js**: Stores constants such as serverOrigin URL.
-
-### Other Files
-
-- **App.js**: The main component that includes routing setup.
-- **index.js**: Entry point of the React application.
-- **tailwind.config.js**: Configuration file for Tailwind CSS.
-- **App.css** and **index.css**: Custom stylesheets.
-
-## Styling
-
-This project uses **Tailwind CSS** for styling. You can modify `tailwind.config.js` to customize the theme as needed.
-
-## Running Tests
-
-Run the following command to execute tests:
-
-```bash
-npm test
-```
-
-## Build
-
-To create an optimized production build, run:
-
-```bash
-npm run build
-```
-
-The build will be placed in the `build/` directory and can be deployed to a server.
-
-## Additional Notes
-
-- Ensure the backend server is running for full functionality.
-- Adjust the `serverOrigin` in `utils/constant` to match the backend server cors origin.
-
----
